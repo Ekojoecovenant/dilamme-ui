@@ -7,69 +7,82 @@
 }
 
 :root {
-  --bg-base: #0d0f12;
-  --bg-surface: #13171e;
-  --bg-elevated: #1a1f28;
-  --bg-hover: #1e2530;
-  --border: #252c38;
-  --border-light: #2e3744;
+  --bg: #0f1117;
+  --bg-surface: #1a1d24;
+  --bg-elevated: #21252f;
+  --bg-hover: #262b36;
+  --border: #2d3142;
+  --border-light: #363d52;
 
-  --text-primary: #e8edf5;
-  --text-secondary: #8a95a8;
-  --text-muted: #4a5568;
+  --text: #f1f1f3;
+  --text-sub: #9ca3af;
+  --text-muted: #6b7280;
 
-  --accent: #4f8ef7;
-  --accent-hover: #3d7ae8;
-  --success: #34c97a;
-  --warning: #f5a623;
-  --danger: #e8445a;
-  --purple: #a78bfa;
+  --amber: #f59e0b;
+  --amber-dim: #92400e;
+  --amber-bg: rgba(245, 158, 11, 0.1);
+  --amber-border: rgba(245, 158, 11, 0.2);
 
-  --priority-high: #e8445a;
-  --priority-medium: #f5a623;
-  --priority-low: #34c97a;
+  --green: #4ade80;
+  --green-bg: rgba(74, 222, 128, 0.08);
+  --red: #f87171;
+  --red-bg: rgba(248, 113, 113, 0.08);
+  --blue: #60a5fa;
+  --blue-bg: rgba(96, 165, 250, 0.08);
+  --orange: #fb923c;
+  --purple: #c084fc;
+  --purple-bg: rgba(192, 132, 252, 0.08);
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Inter', sans-serif;
 
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--bg-base);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
   font-size: 14px;
   line-height: 1.6;
-  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-base);
+  background: var(--bg);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--border-light);
-  border-radius: 3px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--amber-bg);
+  color: var(--amber);
 }
 
 button {
   cursor: pointer;
   border: none;
   outline: none;
-  font-family: var(--font-sans);
+  font-family: var(--sans);
 }
 
 input,
 select,
 textarea {
-  font-family: var(--font-sans);
+  font-family: var(--sans);
   outline: none;
 }

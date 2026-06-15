@@ -2,119 +2,139 @@ import { useEffect, useState } from 'react'
 import { JobsApi, type JobStats } from '../api'
 import { useSSE } from '../hooks/useSSE'
 
-const statCards = [
-  { key: 'pending',    label: 'Pending',    color: '#4f8ef7' },
-  { key: 'processing', label: 'Processing', color: '#f5a623' },
-  { key: 'completed',  label: 'Completed',  color: '#34c97a' },
-  { key: 'failed',     label: 'Failed',     color: '#e8445a' },
-  { key: 'cancelled',  label: 'Cancelled',  color: '#8a95a8' },
-  { key: 'dlq',        label: 'DLQ',        color: '#a78bfa' },
+const stats = [
+  { key: 'pending',    label: 'pending',    color: 'var(--blue)',   bg: 'var(--blue-bg)' },
+  { key: 'processing', label: 'processing', color: 'var(--amber)',  bg: 'var(--amber-bg)' },
+  { key: 'completed',  label: 'completed',  color: 'var(--green)',  bg: 'var(--green-bg)' },
+  { key: 'failed',     label: 'failed',     color: 'var(--red)',    bg: 'var(--red-bg)' },
+  { key: 'cancelled',  label: 'cancelled',  color: 'var(--text-sub)', bg: 'transparent' },
+  { key: 'dlq',        label: 'dlq',        color: 'var(--purple)', bg: 'var(--purple-bg)' },
 ] as const
 
 export default function Dashboard({ onNavigate }: { onNavigate: (tab: any) => void }) {
-  const [stats, setStats] = useState<JobStats | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [data, setData] = useState<JobStats | null>(null)
 
-  const fetchStats = () => {
-    JobsApi.stats()
-      .then(setStats)
-      .finally(() => setLoading(false))
-  }
+  const fetch = () => JobsApi.stats().then(setData)
 
-  // refresh stats on every SSE event
-  useSSE(() => fetchStats())
-
+  useSSE(() => fetch())
   useEffect(() => {
-    fetchStats()
-    const interval = setInterval(fetchStats, 5000)
-    return () => clearInterval(interval)
+    fetch()
+    const t = setInterval(fetch, 5000)
+    return () => clearInterval(t)
   }, [])
 
   return (
     <div>
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)' }}>
-          Dashboard
+      {/* header */}
+      <div style={{ marginBottom: '28px' }}>
+        <div style={{
+          fontFamily: 'var(--mono)',
+          fontSize: '11px',
+          color: 'var(--text-muted)',
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          marginBottom: '6px',
+        }}>
+          system / overview
+        </div>
+        <h1 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text)' }}>
+          Job Queue Status
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '4px' }}>
-          Live job counts — updates automatically
-        </p>
       </div>
 
-      {/* stat cards */}
+      {/* stat grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-        gap: '12px',
-        marginBottom: '32px',
+        gridTemplateColumns: 'repeat(6, 1fr)',
+        gap: '1px',
+        background: 'var(--border)',
+        borderRadius: 'var(--radius-md)',
+        overflow: 'hidden',
+        marginBottom: '24px',
+        border: '1px solid var(--border)',
       }}>
-        {statCards.map(({ key, label, color }) => (
+        {stats.map(s => (
           <div
-            key={key}
-            onClick={() => onNavigate(key === 'dlq' ? 'dlq' : 'jobs')}
+            key={s.key}
+            onClick={() => onNavigate(s.key === 'dlq' ? 'dlq' : 'jobs')}
             style={{
               background: 'var(--bg-surface)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-md)',
-              padding: '20px',
+              padding: '20px 16px',
               cursor: 'pointer',
-              transition: 'border-color 0.15s, transform 0.1s',
+              transition: 'background 0.12s',
+              position: 'relative',
             }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLDivElement).style.borderColor = color
-              ;(e.currentTarget as HTMLDivElement).style.transform = 'translateY(-1px)'
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border)'
-              ;(e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'
-            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-elevated)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'var(--bg-surface)')}
           >
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>
-              {label}
+            <div style={{
+              fontFamily: 'var(--mono)',
+              fontSize: '10px',
+              color: 'var(--text-muted)',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              marginBottom: '10px',
+            }}>
+              {s.label}
             </div>
-            <div style={{ fontSize: '32px', fontWeight: 700, color, fontVariantNumeric: 'tabular-nums' }}>
-              {loading ? '—' : (stats?.[key] ?? 0)}
+            <div style={{
+              fontSize: '28px',
+              fontWeight: 600,
+              color: s.color,
+              fontVariantNumeric: 'tabular-nums',
+              fontFamily: 'var(--mono)',
+              lineHeight: 1,
+            }}>
+              {data ? (data[s.key] ?? 0) : '·'}
             </div>
           </div>
         ))}
       </div>
 
-      {/* quick actions */}
+      {/* actions */}
       <div style={{
         background: 'var(--bg-surface)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius-md)',
-        padding: '20px',
+        padding: '16px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
       }}>
-        <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Quick Actions
-        </div>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          {[
-            { label: '+ Create Job', tab: 'create', bg: 'var(--accent)' },
-            { label: 'View All Jobs', tab: 'jobs', bg: 'var(--bg-elevated)' },
-            { label: 'Dead Letter Queue', tab: 'dlq', bg: 'var(--bg-elevated)' },
-          ].map(({ label, tab, bg }) => (
-            <button
-              key={tab}
-              onClick={() => onNavigate(tab)}
-              style={{
-                background: bg,
-                color: 'var(--text-primary)',
-                padding: '8px 16px',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '13px',
-                fontWeight: 500,
-                border: '1px solid var(--border)',
-                transition: 'opacity 0.15s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <span style={{
+          fontFamily: 'var(--mono)',
+          fontSize: '11px',
+          color: 'var(--text-muted)',
+          marginRight: '8px',
+          letterSpacing: '0.06em',
+        }}>
+          actions /
+        </span>
+        {[
+          { label: 'new job', tab: 'create', primary: true },
+          { label: 'all jobs', tab: 'jobs', primary: false },
+          { label: 'dead letter queue', tab: 'dlq', primary: false },
+        ].map(a => (
+          <button
+            key={a.tab}
+            onClick={() => onNavigate(a.tab)}
+            style={{
+              padding: '5px 14px',
+              borderRadius: 'var(--radius-sm)',
+              background: a.primary ? 'var(--amber)' : 'var(--bg-elevated)',
+              color: a.primary ? '#000' : 'var(--text-sub)',
+              fontSize: '12px',
+              fontFamily: 'var(--mono)',
+              fontWeight: a.primary ? 500 : 400,
+              border: '1px solid ' + (a.primary ? 'var(--amber)' : 'var(--border-light)'),
+              transition: 'opacity 0.15s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '0.8')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+          >
+            {a.label}
+          </button>
+        ))}
       </div>
     </div>
   )
